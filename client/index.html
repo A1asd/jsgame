@@ -1,26 +1,80 @@
-<canvas height="500" width="700"></canvas>
+<canvas id="ctx" height="300" width="500"></canvas>
 <p id="motd"></p><button onclick="pingServer()"></button><p id="ping"></p>
 
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script>
 	var socket = io();
+	var ctx = document.getElementById('ctx').getContext("2d");
+
+	ctx.font = "30px Arial";
 
 	socket.emit('happy', {reason:'im happy'});
 	socket.on('serverMsg', function(data) {
 		document.getElementById("motd").innerHTML = data.msg;
 	});
 
-	var latency = 0;
+	let pingstart = 0;
+
 	function pingServer() {
 		socket.emit('pingRequest');
 		pingstart = new Date();
-		console.log(latency);
 	}
+
+	var keystates = {
+		moveDown: false,
+		moveUp: false,
+		moveLeft: false,
+		moveRight: false,
+	};
+
+	socket.on('updatePosition', function(data) {
+		ctx.clearRect(0, 0, 500, 300);
+		for(var i = 0; i < data.length; i++) {
+			ctx.fillText("A", data[i].x, data[i].y);
+		}
+	});
+
+	document.addEventListener('keydown', function(event) {
+		switch (event.code) {
+			case "KeyW":
+				keystates.moveUp = true;
+				break;
+			case "KeyS":
+				keystates.moveDown = true;
+				break;
+			case "KeyA":
+				keystates.moveLeft = true;
+				break;
+			case "KeyD":
+				keystates.moveRight = true;
+				break;
+		}
+
+		socket.emit('keystateUpdate', keystates);
+	});
+
+	document.addEventListener('keyup', function(event) {
+		switch (event.code) {
+			case "KeyW":
+				keystates.moveUp = false;
+				break;
+			case "KeyS":
+				keystates.moveDown = false;
+				break;
+			case "KeyA":
+				keystates.moveLeft = false;
+				break;
+			case "KeyD":
+				keystates.moveRight = false;
+				break;
+		}
+
+		socket.emit('keystateUpdate', keystates);
+	});
 
 	socket.on('pingResponse', function() {
 		let pingend = new Date();
-		let latency = pingend - pingstart;
-		document.getElementById('ping').innerHTML = latency;
-	})
+		document.getElementById('ping').innerHTML = pingend - pingstart;
+	});
 	
 </script>

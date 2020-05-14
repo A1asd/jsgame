@@ -16,8 +16,7 @@ var SOCKET_LIST = {};
 
 io.sockets.on('connection', function(socket) {
 	socket.id = Math.floor(Math.random()*100);
-	socket.x = 0;
-	socket.y = 0;
+
 	console.log('socket connected');
 
 	socket.on('updatePosition', function(data) {
@@ -32,7 +31,18 @@ io.sockets.on('connection', function(socket) {
 	socket.on('pingRequest', function() {
 		socket.emit('pingResponse');
 	});
+
+	socket.on('keystateUpdate', function(data) {
+
+	});
+
+	socket.on('disconnect', function() {
+		console.log("socket " + socket.id + " disconnected");
+		delete SOCKET_LIST[socket.id];
+	});
 });
+
+
 
 
 
