@@ -1,7 +1,9 @@
-var express = require('express');
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server, {});
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server, {});
+
+const Player = require('./Models/Player.js');
 
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/client/index.html');
@@ -17,12 +19,11 @@ var SOCKET_LIST = {};
 io.sockets.on('connection', function(socket) {
 	socket.id = Math.floor(Math.random()*100);
 
-	console.log('socket connected');
+	SOCKET_LIST[socket.id] = socket;
 
-	socket.on('updatePosition', function(data) {
-		Player.position.x = data.x;
-		Player.position.y = data.y;
-	});
+	Player.onConnect(socket);
+
+	console.log("socket " + socket.id + " connected");
 
 	socket.emit('serverMsg', {
 		msg:'Your Server - Online! 24/7 ;)',
@@ -32,51 +33,22 @@ io.sockets.on('connection', function(socket) {
 		socket.emit('pingResponse');
 	});
 
-	socket.on('keystateUpdate', function(data) {
-
-	});
-
 	socket.on('disconnect', function() {
 		console.log("socket " + socket.id + " disconnected");
 		delete SOCKET_LIST[socket.id];
+		Player.onDisconnect(socket);
 	});
 });
 
 
+// DO THE LOOP HERE
+// EMIT POSITIONS FROM ALL PLAYERS TO ALL PLAYERS
 
+setInterval(function() {
+	var pack = Player.update();
 
-
-
-
-class Entity {
-	constructor(position, direction) {
-		this.position = position;
-		this.direction = direction;
+	for (var i in SOCKET_LIST) {
+		var socket = SOCKET_LIST[i];
+		socket.emit('newPosition', pack);
 	}
-}
-
-class Player extends Entity {
-	constructor(id, position, direction) {
-		super(position, direction);
-	}
-
-	move(x, y) {
-		this.position.x = x;
-		this.position.y = y;
-	}
-
-	update() {
-
-	}
-}
-
-class Projectile extends Entity {
-	constructor(position, direction) {
-		super(position, direction);
-	}
-}
-
-class Weapon {
-	constructor() {
-	}
-}
+}, 1000/25);
