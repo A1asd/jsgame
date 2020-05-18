@@ -23,7 +23,6 @@ class Player extends Entity {
 	}
 
 	updateAnimation() {
-		currentFrame += 1;
 	}
 
 	move(x, y) {

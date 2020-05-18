@@ -9,6 +9,12 @@
 
 // https://stackoverflow.com/questions/28207232/draw-border-around-nontransparent-part-of-image-on-canvas/28220510 für sprites hinter objekten (bosse zB?. sollte geil sein)
 
+	const fs = require('fs');
+	fs.readFile('keybinds.json', (err, data) => {
+		if (err) throw err;
+		let keybinds = JSON.parse(data);
+	})
+
 	var socket = io();
 	var ctx = document.getElementById('ctx').getContext("2d");
 

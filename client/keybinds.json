@@ -1,0 +1,26 @@
+{
+	"moveUp": {
+		"state": false,
+		"primary": "KeyW"
+	},
+	"moveDown": {
+		"state": false,
+		"primary": "KeyS"
+	},
+	"moveLeft": {
+		"state": false,
+		"primary": "KeyA"
+	},
+	"moveRight": {
+		"state": false,
+		"primary": "KeyD"
+	},
+	"skill1": "MouseLeft",
+	"skill2": "MouseRight",
+	"Skill3": "KeyE",
+	"Skill4": "KeyQ",
+	"Skill5": "Digit1",
+	"Skill6": "Digit2",
+	"Skill7": "Digit3",
+	"Skill8": "Digit4"
+}
