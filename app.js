@@ -5,6 +5,7 @@ const io = require('socket.io')(server, {});
 
 const Player = require('./Models/Player');
 const Projectile = require('./Models/Projectile');
+const Entity = require('./Models/Entity');
 
 
 app.get('/', function(req, res) {
@@ -46,6 +47,7 @@ io.sockets.on('connection', function(socket) {
 // DO THE LOOP HERE
 // EMIT POSITIONS FROM ALL PLAYERS TO ALL PLAYERS
 
+
 setInterval(function() {
 	var pack = {
 		player: Player.update(),
@@ -54,8 +56,14 @@ setInterval(function() {
 
 	for (var i in SOCKET_LIST) {
 		var socket = SOCKET_LIST[i];
-		socket.emit('newPosition', pack);
+		socket.emit('init', Entity.initPack);
+		socket.emit('update', pack);
+		socket.emit('remove', Entity.removePack);
 	}
+
+	Entity.initPack = {player:[], projectile:[]};
+	Entity.removePack = {player:[], projectile:[]};
+
 }, 1000/25);
 
 module.exports = Player;

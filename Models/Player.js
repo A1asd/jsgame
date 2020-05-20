@@ -5,6 +5,8 @@ class Player extends Entity {
 	constructor(id, x, y, angle) {
 		super(x, y, angle);
 		
+		this.id = id;
+
 		this.keyStates = {
 			up: false,
 			down: false,
@@ -15,6 +17,11 @@ class Player extends Entity {
 
 		this.mouseAngle = 0;
 		this.maxSpd = 2;
+
+		this.hp = 10;
+		this.maxHp = 10;
+
+		this.score = 0;
 
 		Entity.playerList[id] = this;
 	}
@@ -47,11 +54,21 @@ class Player extends Entity {
 	}
 
 	attack(angle) {
-		new Projectile(this, this.x, this.y, angle);
+		var pro = new Projectile(this, this.x, this.y, angle);
+		Entity.initPack.projectile.push(pro.getInitPack());
+	}
+
+	getInitPack() {
+		return this;
+	}
+
+	getUpdatePack() {
+		return this;
 	}
 
 	static onConnect(socket) {
 		var player = new Player(socket.id, 250, 150, 0);
+		Entity.initPack.player.push(player.getInitPack());
 
 		socket.on('keystateUpdate', function(data) {
 			player.keyStates.up = data.moveUp;
@@ -59,12 +76,27 @@ class Player extends Entity {
 			player.keyStates.left = data.moveLeft;
 			player.keyStates.right = data.moveRight;
 			player.keyStates.attack = data.attack;
-			player.mouseAngle = data.mouseAngle;
+			player.mouseAngle = Math.atan2(data.mouseAngle.y - player.y, data.mouseAngle.x - player.x) / Math.PI * 180;
 		});
+
+		var players = [];
+		for (var i in Entity.playerList) {
+			players.push(Entity.playerList[i].getInitPack());
+		}
+
+		var projectiles = [];
+		for (var i in Entity.projectileList) {
+			projectiles.push(Entity.projectileList[i].getInitPack());
+		}
+		socket.emit('init', {
+			player: players,
+			projectile: projectiles,
+		})
 	}
 
 	static onDisconnect(socket) {
-		delete this.list[socket.id];
+		delete Entity.playerList[socket.id];
+		Entity.removePack.projectile.push(socket.id);
 	}
 
 	static update() {
@@ -72,10 +104,7 @@ class Player extends Entity {
 		for (var i in Entity.playerList) {
 			var player = Entity.playerList[i];
 			player.update();
-			pack.push({
-				x: player.x,
-				y: player.y,
-			});
+			pack.push(player.getUpdatePack());
 		}
 		return pack;
 	}

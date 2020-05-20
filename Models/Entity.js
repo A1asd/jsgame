@@ -22,7 +22,12 @@ class Entity {
 
 	static playerList = {};
 
-	static projectilelist = {};
+	static enemyList = {};
+
+	static projectileList = {};
+
+	static initPack = {player:[], projectile:[]};
+	static removePack = {player:[], projectile:[]};
 }
 
 module.exports = Entity;

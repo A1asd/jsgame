@@ -23,7 +23,12 @@
 
 	img.src = "https://i.pinimg.com/originals/f4/89/82/f48982c729d6dd04d2f98e99ed18cb03.png";
 
-	function draw(x, y) {
+	function draw(player, x, y) {
+		var hpWidth = 30 * player.hp / player.maxHp;
+
+		ctx.fillRect(x - hpWidth / 2, y - 40, hpWidth, 4);
+		ctx.fillText(player.score, x, y - 60);
+
 		var dArr = [-1,-1, 0,-1, 1,-1, -1,0, 1,0, -1,1, 0,1, 1,1], // offset array
 			s = 2,  // thickness scale
 			i = 0;  // iterator
@@ -79,18 +84,86 @@
 		mouseAngle: 0,
 	};
 
-	socket.on('newPosition', function(data) {
-		ctx.clearRect(0, 0, 500, 300);
-		ctx.fillStyle = "black";
+
+
+	//init
+	class Player {
+		constructor(initPackage) {
+			this.id = initPackage.id;
+			this.x = initPackage.x;
+			this.y = initPackage.y;
+			this.hp = initPackage.hp;
+			this.maxHp = initPackage.maxHp;
+			this.score = initPackage.score;
+			Player.list[this.id] = this;
+		}
+		static list = {};
+	}
+
+	class Projectile {
+		constructor(initPackage) {
+			this.id = initPackage.id;
+			this.x = initPackage.x;
+			this.y = initPackage.y;
+			Projectile.list[this.id] = this;
+		}
+		static list = {};
+	}
+
+	socket.on('init', function(data) {
 		for (var i = 0; i < data.player.length; i++) {
-			draw(data.player[i].x, data.player[i].y);
+			new Player(data.player[i]);
+		}
+		for (var i = 0; i < data.projectile.length; i++) {
+			new Projectile(data.projectile[i])
+		}
+	});
+
+	//update
+
+	socket.on('update', function(data) {
+		for (var i = 0; i < data.player.length; i++) {
+			var pack = data.player[i];
+			var player = Player.list[pack.id];
+
+			if (player) {
+				if (pack.x !== undefined) player.x = pack.x;
+				if (pack.y !== undefined) player.y = pack.y;
+				if (pack.hp !== undefined) player.hp = pack.hp;
+				if (pack.score !== undefined) player.score = pack.score;
+			}
+		}
+
+		for (var i = 0; i < data.projectile.length; i++) {
+			var pack = data.projectile[i];
+			var projectile = Projectile.list[pack.id];
+
+			if (projectile) {
+				if (pack.x !== undefined) projectile.x = pack.x;
+				if (pack.y !== undefined) projectile.y = pack.y;
+			}
+		}
+	});
+
+	//remove
+
+	socket.on('remove', function(data) {
+		for (var i = 0; i < data.player.length; i++) delete Player.list[data.player[i]];
+		for (var i = 0; i < data.projectile.length; i++) delete Projectile.list[data.projectile[i]];
+	});
+
+
+	setInterval(function() {
+		ctx.clearRect(0, 0, 500, 300);
+		for (var i in Player.list) {
+			draw(Player.list[i], Player.list[i].x, Player.list[i].y);
 			//ctx.fillText('A', data[i].x, data[i].y);
 		}
 		ctx.fillStyle = "black";
-		for (var i = 0; i < data.projectile.length; i++) {
-			ctx.fillRect(data.projectile[i].x-2, data.projectile[i].y-2, 4, 4);
+		for (var i in Projectile.list) {
+			ctx.fillRect(Projectile.list[i].x-2, Projectile.list[i].y-2, 4, 4);
 		}
-	});
+	}, 40);
 
 	document.addEventListener('keydown', function(event) {
 		if (event.code === "KeyW") keystates.moveUp = true;
@@ -111,24 +184,19 @@
 	});
 
 	document.addEventListener('mousedown', function(event) {
-		
 		keystates.attack = true;
-
 		socket.emit('keystateUpdate', keystates);
 	});
 
 	document.addEventListener('mouseup', function(event) {
 		keystates.attack = false;
-
 		socket.emit('keystateUpdate', keystates);
 	});
 
 	document.addEventListener('mousemove', function(event) {
-		var x = -250 + event.clientX - 8;
-		var y = -150 + event.clientY - 8;
-		var angle = Math.atan2(y, x) / Math.PI * 180;
+		var mousePosition = { x: event.clientX, y: event.clientY };
 
-		keystates.mouseAngle = angle;
+		keystates.mouseAngle = mousePosition;
 		socket.emit('keystateUpdate', keystates)
 	});
 	
