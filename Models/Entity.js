@@ -1,8 +1,28 @@
 class Entity {
-	constructor(position, direction) {
-		this.position = position;
-		this.direction = direction;
+	constructor(x, y, angle) {
+		this.x = x;
+		this.y = y;
+		this.angle = angle;
+		this.speedX = 0;
+		this.speedY = 0;
 	}
+
+	update() {
+		this.updatePosition();
+	}
+
+	updatePosition() {
+		this.x += this.speedX;
+		this.y += this.speedY;
+	}
+
+	getDistance(pt) {
+		return Math.sqrt(Math.pow(this.x - pt.x, 2) + Math.pow(this.y - pt.y, 2));
+	}
+
+	static playerList = {};
+
+	static projectilelist = {};
 }
 
 module.exports = Entity;

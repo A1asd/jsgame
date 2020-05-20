@@ -1,48 +1,65 @@
-const Entity = require('./Entity.js');
+const Entity = require('./Entity');
+const Projectile = require('./Projectile');
 
 class Player extends Entity {
-	constructor(id, position, direction) {
-		super(position, direction);
+	constructor(id, x, y, angle) {
+		super(x, y, angle);
 		
 		this.keyStates = {
 			up: false,
 			down: false,
 			left: false,
 			right: false,
+			attack: false,
 		}
-		this.maxSpd = 10;
 
-		Player.list[id] = this;
+		this.mouseAngle = 0;
+		this.maxSpd = 2;
+
+		Entity.playerList[id] = this;
 	}
 
-	updatePosition() {
-		if (this.keyStates.up) this.position.y -= this.maxSpd;
-		if (this.keyStates.down) this.position.y += this.maxSpd;
-		if (this.keyStates.left) this.position.x -= this.maxSpd;
-		if (this.keyStates.right) this.position.x += this.maxSpd;
-	}
-
-	updateAnimation() {
+	updateSpeed() {
+		if (this.keyStates.up) this.speedY -= this.maxSpd;
+		else if (this.keyStates.down) this.speedY += this.maxSpd;
+		else this.speedY = 0;
+		if (this.keyStates.left) this.speedX -= this.maxSpd;
+		else if (this.keyStates.right) this.speedX += this.maxSpd;
+		else this.speedX = 0;
 	}
 
 	move(x, y) {
-		this.position.x = x;
-		this.position.y = y;
+		this.x = x;
+		this.y = y;
+	}
+
+	getFacingDirection() {
+		if (this.angle < 25 || this.angle > 330) return "up"; //usw.
 	}
 
 	update() {
-		this.updatePosition();
-		this.updateAnimation();
+		this.updateSpeed();
+		super.update();
+
+		if (this.keyStates.attack) {
+			this.attack(this.mouseAngle);
+		}
+	}
+
+	attack(angle) {
+		new Projectile(this, this.x, this.y, angle);
 	}
 
 	static onConnect(socket) {
-		var player = new Player(socket.id, { x: 250, y: 150 }, "left");
+		var player = new Player(socket.id, 250, 150, 0);
 
 		socket.on('keystateUpdate', function(data) {
 			player.keyStates.up = data.moveUp;
 			player.keyStates.down = data.moveDown;
 			player.keyStates.left = data.moveLeft;
 			player.keyStates.right = data.moveRight;
+			player.keyStates.attack = data.attack;
+			player.mouseAngle = data.mouseAngle;
 		});
 	}
 
@@ -52,18 +69,16 @@ class Player extends Entity {
 
 	static update() {
 		var pack = [];
-		for (var i in this.list) {
-			var player = this.list[i];
+		for (var i in Entity.playerList) {
+			var player = Entity.playerList[i];
 			player.update();
 			pack.push({
-				x: player.position.x,
-				y: player.position.y,
+				x: player.x,
+				y: player.y,
 			});
 		}
 		return pack;
 	}
-
-	static list = {};
 }
 
 module.exports = Player;

@@ -9,11 +9,41 @@
 
 // https://stackoverflow.com/questions/28207232/draw-border-around-nontransparent-part-of-image-on-canvas/28220510 für sprites hinter objekten (bosse zB?. sollte geil sein)
 
-	const fs = require('fs');
+	/*const fs = require('fs');
 	fs.readFile('keybinds.json', (err, data) => {
 		if (err) throw err;
 		let keybinds = JSON.parse(data);
-	})
+	})*/
+
+
+
+
+	//outline demo:
+	img = new Image;
+
+	img.src = "https://i.pinimg.com/originals/f4/89/82/f48982c729d6dd04d2f98e99ed18cb03.png";
+
+	function draw(x, y) {
+		var dArr = [-1,-1, 0,-1, 1,-1, -1,0, 1,0, -1,1, 0,1, 1,1], // offset array
+			s = 2,  // thickness scale
+			i = 0;  // iterator
+		
+		// draw images at offsets from the array scaled by s
+		for(; i < dArr.length; i += 2)
+			ctx.drawImage(img, x + dArr[i]*s, y + dArr[i+1]*s, 30, 30);
+		
+		// fill with color
+		ctx.globalCompositeOperation = "source-in";
+		ctx.fillStyle = "red";
+		ctx.fillRect(0, 0 ,500, 300);
+		
+		// draw original image in normal mode
+		ctx.globalCompositeOperation = "source-over";
+		ctx.drawImage(img, x, y, 30, 30);
+	}
+
+
+
 
 	var socket = io();
 	var ctx = document.getElementById('ctx').getContext("2d");
@@ -45,12 +75,20 @@
 		moveUp: false,
 		moveLeft: false,
 		moveRight: false,
+		attack: false,
+		mouseAngle: 0,
 	};
 
 	socket.on('newPosition', function(data) {
 		ctx.clearRect(0, 0, 500, 300);
-		for (var i = 0; i < data.length; i++) {
-			ctx.fillText('A', data[i].x, data[i].y);
+		ctx.fillStyle = "black";
+		for (var i = 0; i < data.player.length; i++) {
+			draw(data.player[i].x, data.player[i].y);
+			//ctx.fillText('A', data[i].x, data[i].y);
+		}
+		ctx.fillStyle = "black";
+		for (var i = 0; i < data.projectile.length; i++) {
+			ctx.fillRect(data.projectile[i].x-2, data.projectile[i].y-2, 4, 4);
 		}
 	});
 
@@ -70,6 +108,28 @@
 		if (event.code === "KeyD") keystates.moveRight = false;
 
 		socket.emit('keystateUpdate', keystates);
+	});
+
+	document.addEventListener('mousedown', function(event) {
+		
+		keystates.attack = true;
+
+		socket.emit('keystateUpdate', keystates);
+	});
+
+	document.addEventListener('mouseup', function(event) {
+		keystates.attack = false;
+
+		socket.emit('keystateUpdate', keystates);
+	});
+
+	document.addEventListener('mousemove', function(event) {
+		var x = -250 + event.clientX - 8;
+		var y = -150 + event.clientY - 8;
+		var angle = Math.atan2(y, x) / Math.PI * 180;
+
+		keystates.mouseAngle = angle;
+		socket.emit('keystateUpdate', keystates)
 	});
 	
 </script>

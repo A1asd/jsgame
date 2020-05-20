@@ -3,7 +3,9 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server, {});
 
-const Player = require('./Models/Player.js');
+const Player = require('./Models/Player');
+const Projectile = require('./Models/Projectile');
+
 
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/client/index.html');
@@ -45,10 +47,15 @@ io.sockets.on('connection', function(socket) {
 // EMIT POSITIONS FROM ALL PLAYERS TO ALL PLAYERS
 
 setInterval(function() {
-	var pack = Player.update();
+	var pack = {
+		player: Player.update(),
+		projectile: Projectile.update()
+	}
 
 	for (var i in SOCKET_LIST) {
 		var socket = SOCKET_LIST[i];
 		socket.emit('newPosition', pack);
 	}
 }, 1000/25);
+
+module.exports = Player;
