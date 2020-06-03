@@ -1,9 +1,10 @@
 <canvas id="ctx" width="500" height="300" style="border: 1px solid black; position:absolute;"></canvas>
-<div id="enemyHp" style="width: 200px; height: 5px; position:relative; background-color:red; left: 150px; top: 10px;"></div>
+<div id="enemyHp" style="width: 200px; height: 5px; position:relative; background-color:red; left: 15px; bottom: -280px;"></div>
 <p id="motd"></p>
 <div>
 	<label>Ping zum Server:</label> <label id="ping"></label> <label>ms</label>
 </div>
+<div id="serverList"></div>
 
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script>
@@ -17,7 +18,9 @@
 	})*/
 
 	var hpBar = document.getElementById('enemyHp');
+	//var serverConnectButton = document.getElementById('serverConnect');
 
+	var clientId = 0;
 
 	//outline demo:
 	img = new Image;
@@ -25,10 +28,12 @@
 	img.src = "https://i.pinimg.com/originals/f4/89/82/f48982c729d6dd04d2f98e99ed18cb03.png";
 
 	function draw(player, x, y) {
-		var hpWidth = 200 * player.hp / player.maxHp;
+		var hpWidth = 200 * Player.list[clientId].hp / Player.list[clientId].maxHp;
 
 		//ctx.fillRect(x - hpWidth / 2, y - 40, hpWidth, 4);
 		hpBar.style.width = hpWidth;
+		hpBar.innerText = clientId;
+		ctx.fillStyle = "";
 		ctx.fillText(player.score, x, y - 60);
 
 		var dArr = [-1,-1, 0,-1, 1,-1, -1,0, 1,0, -1,1, 0,1, 1,1], // offset array
@@ -49,6 +54,9 @@
 		ctx.drawImage(img, x, y, 30, 30);
 	}
 
+	function drawHud(player) {
+
+	}
 
 
 
@@ -63,13 +71,34 @@
 
 	var pingstart = 0;
 
+	var serverList = [];
+
 	setInterval(function() {
 		pingServer();
+		getServerList();
 	}, 1000);
 	
 	function pingServer() {
 		socket.emit('pingRequest');
 		pingstart = new Date();
+	}
+
+	function getServerList() {
+		socket.emit('getServerList');
+	}
+
+	socket.on('serverList', function(data) {
+		serverList = data;
+		refreshServerList();
+	});
+
+	function refreshServerList() {
+		var tmpHtml = "";
+		for(var i in serverList) {
+			console.log(serverList[i].connectedSockets);
+			tmpHtml += "<div>Server " + serverList[i].id + "</div><div>" + serverList[i].connectedSockets.length + "/" + serverList[i].maxSockets + "</div>";
+		}
+		document.getElementById('serverList').innerHTML = tmpHtml;
 	}
 
 	socket.on('pingResponse', function() {
@@ -111,6 +140,35 @@
 		}
 		static list = {};
 	}
+
+
+	class Map {
+		constructor(configPath) {
+			this.configPath = configPath;
+			this.tileHeight = configPath.tileHeight;
+			this.tileWidth = configPath.tileWidth;
+			this.width = configPath.width;
+			this.height = configPath.height;
+
+			this.renderorder = configPath.renderorder;
+			
+			this.tilesets = [];
+			for (tileset in configPath.tilesets) {
+				this.tilesetPath.push(tilesets);
+			}
+
+			this.layers = [];
+			for (layer in configPath.layers) {
+				this.layers.push(layer);
+			}
+		}
+	}
+
+	socket.emit('requestId');
+
+	socket.on('responseId', function(id) {
+		clientId = id;
+	});
 
 	socket.on('init', function(data) {
 		for (var i = 0; i < data.player.length; i++) {
@@ -165,6 +223,12 @@
 		for (var i in Projectile.list) {
 			ctx.fillRect(Projectile.list[i].x-2, Projectile.list[i].y-2, 4, 4);
 		}
+
+		//draw layers, starting with bottom layer
+
+		//last layer: HUD
+		//drawHud(Player.list[clientId]);
+
 	}, 40);
 
 	document.addEventListener('keydown', function(event) {

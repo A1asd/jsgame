@@ -17,10 +17,13 @@ app.use('/client', express.static(__dirname + '/client'));
 server.listen(3000);
 console.log("Server started");
 
+const ARGUMENTS = process.argv.slice(2);
 var SOCKET_LIST = {};
 
+var count = 0;
+
 io.sockets.on('connection', function(socket) {
-	socket.id = Math.floor(Math.random()*100);
+	socket.id = ++count;
 
 	SOCKET_LIST[socket.id] = socket;
 
@@ -40,6 +43,18 @@ io.sockets.on('connection', function(socket) {
 		console.log("socket " + socket.id + " disconnected");
 		delete SOCKET_LIST[socket.id];
 		Player.onDisconnect(socket);
+	});
+
+	socket.on('requestId', function() {
+		socket.emit('responseId', socket.id);
+	});
+
+	socket.on('getServerList', function() {
+		socket.emit('serverList', Server.serverList);
+	});
+
+	socket.on('clientConnecting', function() {
+
 	});
 });
 
@@ -66,4 +81,47 @@ setInterval(function() {
 
 }, 1000/25);
 
-module.exports = Player;
+
+class Server {
+	constructor(map = "./maps/test.map", connectedSockets = new Array(), state = "waiting") {
+		this.maxSockets = 4;
+
+		this.id = ++count;
+		this.map = map;
+		if (connectedSockets.length <= this.maxSockets) {
+			this.connectedSockets = connectedSockets;
+		} else {
+			throw "Too many Sockets in Server creation. Max Clients: " + this.maxSockets;
+		}
+		this.state = state; //ready, waiting, running, empty
+
+		Server.serverList[this.id] = this;
+	}
+
+	getSocketCount() {
+		return this.connectedSockets.length;
+	}
+
+	addClient(client) {
+		if (this.connectedSockets.length < this.maxSockets){
+			this.connectedSockets.push(client);
+		} else {
+			throw "Server is already full";
+		}
+	}
+
+	static getEmptyServers() {
+		let results = {}, key;
+
+		for (key in Server.serverList) {
+			console.log(Server.serverList[key].connectedSockets.length === 0);
+		}
+	}
+
+	static count = 0;
+	static serverList = {};
+}
+
+new Server();
+new Server();
+new Server();
