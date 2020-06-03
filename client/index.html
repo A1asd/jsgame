@@ -70,20 +70,6 @@
 		ctx.drawImage(img, x, y, 30, 30);
 	}
 
-<<<<<<< HEAD
-	function drawHud(player) {
-
-	}
-
-
-
-	var socket = io();
-	var ctx = document.getElementById('ctx').getContext("2d");
-
-	ctx.font = "30px Arial";
-
-=======
->>>>>>> b873d90159597c2ccee73bbbe9aa0c595d22e333
 	socket.on('serverMsg', function(data) {
 		document.getElementById("motd").innerHTML = data.msg;
 	});
@@ -134,33 +120,6 @@
 		mouseAngle: 0,
 	};
 
-<<<<<<< HEAD
-
-
-	//init
-	class Player {
-		constructor(initPackage) {
-			this.id = initPackage.id;
-			this.x = initPackage.x;
-			this.y = initPackage.y;
-			this.hp = initPackage.hp;
-			this.maxHp = initPackage.maxHp;
-			this.score = initPackage.score;
-			Player.list[this.id] = this;
-		}
-		static list = {};
-	}
-
-	class Projectile {
-		constructor(initPackage) {
-			this.id = initPackage.id;
-			this.x = initPackage.x;
-			this.y = initPackage.y;
-			Projectile.list[this.id] = this;
-		}
-		static list = {};
-	}
-
 
 	class Map {
 		constructor(configPath) {
@@ -190,8 +149,6 @@
 		clientId = id;
 	});
 
-=======
->>>>>>> b873d90159597c2ccee73bbbe9aa0c595d22e333
 	socket.on('init', function(data) {
 		for (let i = 0; i < data.player.length; i++) {
 			new Player(data.player[i]);
