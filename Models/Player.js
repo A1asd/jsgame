@@ -41,7 +41,14 @@ class Player extends Entity {
 	}
 
 	getFacingDirection() {
-		if (this.angle < 25 || this.angle > 330) return "up"; //usw.
+		if (this.angle < 25 || this.angle > 339) return "up"; //usw.
+		if (this.angle < 70) return "upright";
+		if (this.angle < 115) return "right";
+		if (this.angle < 160) return "downright";
+		if (this.angle < 205) return "down";
+		if (this.angle < 250) return "downleft";
+		if (this.angle < 295) return "left";
+		if (this.angle < 340) return "leftup";
 	}
 
 	update() {
