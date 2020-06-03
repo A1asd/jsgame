@@ -7,7 +7,23 @@
 <div id="serverList"></div>
 
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="Entities.js"></script>
+<script src="Renderer.js"></script>
+<script src="InputHandler.js"></script>
 <script>
+
+	const socket = io();
+	const ctx = document.getElementById('ctx').getContext("2d");
+
+	let config = {
+		clientWidth: 500,
+		clientHeight: 300,
+		outlineThickness: 2,
+	}
+
+	const renderer = new Renderer(config);
+
+	ctx.font = "30px Arial";
 
 // https://stackoverflow.com/questions/28207232/draw-border-around-nontransparent-part-of-image-on-canvas/28220510 für sprites hinter objekten (bosse zB?. sollte geil sein)
 
@@ -54,6 +70,7 @@
 		ctx.drawImage(img, x, y, 30, 30);
 	}
 
+<<<<<<< HEAD
 	function drawHud(player) {
 
 	}
@@ -65,6 +82,8 @@
 
 	ctx.font = "30px Arial";
 
+=======
+>>>>>>> b873d90159597c2ccee73bbbe9aa0c595d22e333
 	socket.on('serverMsg', function(data) {
 		document.getElementById("motd").innerHTML = data.msg;
 	});
@@ -115,6 +134,7 @@
 		mouseAngle: 0,
 	};
 
+<<<<<<< HEAD
 
 
 	//init
@@ -170,20 +190,21 @@
 		clientId = id;
 	});
 
+=======
+>>>>>>> b873d90159597c2ccee73bbbe9aa0c595d22e333
 	socket.on('init', function(data) {
-		for (var i = 0; i < data.player.length; i++) {
+		for (let i = 0; i < data.player.length; i++) {
 			new Player(data.player[i]);
 		}
-		for (var i = 0; i < data.projectile.length; i++) {
+		for (let i = 0; i < data.projectile.length; i++) {
 			new Projectile(data.projectile[i])
 		}
 	});
 
 	//update
-
 	socket.on('update', function(data) {
-		for (var i = 0; i < data.player.length; i++) {
-			var pack = data.player[i];
+		for (let i = 0; i < data.player.length; i++) {
+			let pack = data.player[i];
 			var player = Player.list[pack.id];
 
 			if (player) {
@@ -194,8 +215,8 @@
 			}
 		}
 
-		for (var i = 0; i < data.projectile.length; i++) {
-			var pack = data.projectile[i];
+		for (let i = 0; i < data.projectile.length; i++) {
+			let pack = data.projectile[i];
 			var projectile = Projectile.list[pack.id];
 
 			if (projectile) {
@@ -206,21 +227,20 @@
 	});
 
 	//remove
-
 	socket.on('remove', function(data) {
-		for (var i = 0; i < data.player.length; i++) delete Player.list[data.player[i]];
-		for (var i = 0; i < data.projectile.length; i++) delete Projectile.list[data.projectile[i]];
+		for (let i = 0; i < data.player.length; i++) delete Player.list[data.player[i]];
+		for (let i = 0; i < data.projectile.length; i++) delete Projectile.list[data.projectile[i]];
 	});
 
 
 	setInterval(function() {
 		ctx.clearRect(0, 0, 500, 300);
-		for (var i in Player.list) {
+		for (let i in Player.list) {
 			draw(Player.list[i], Player.list[i].x, Player.list[i].y);
 			//ctx.fillText('A', data[i].x, data[i].y);
 		}
 		ctx.fillStyle = "black";
-		for (var i in Projectile.list) {
+		for (let i in Projectile.list) {
 			ctx.fillRect(Projectile.list[i].x-2, Projectile.list[i].y-2, 4, 4);
 		}
 
@@ -260,7 +280,7 @@
 	});
 
 	document.addEventListener('mousemove', function(event) {
-		var mousePosition = { x: event.clientX, y: event.clientY };
+		let mousePosition = { x: event.clientX, y: event.clientY };
 
 		keystates.mouseAngle = mousePosition;
 		socket.emit('keystateUpdate', keystates)
