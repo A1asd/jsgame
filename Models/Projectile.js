@@ -4,11 +4,12 @@ class Projectile extends Entity {
 	constructor(parent, x, y, angle) {
 		super(x, y, angle);
 		this.parent = parent;
-		this.id = Math.random();
+		this.id = ++Projectile.count;
 		this.speedX = Math.cos(angle/180*Math.PI) * 10;
 		this.speedY = Math.sin(angle/180*Math.PI) * 10;
 
 		this.timer = 0;
+		this.tick = 0;
 		this.toRemove = false;
 
 		Entity.projectileList[this.id] = this;
@@ -26,7 +27,7 @@ class Projectile extends Entity {
 			if (this.getDistance(player) < 32 && this.parent !== player) {
 
 				player.hp -= 1;
-				var shooter = Entity.playerList[this.parent];
+				var shooter = Entity.playerList[this.parent.id];
 
 				if (player.hp <= 0) {
 					if (shooter) {
@@ -66,6 +67,8 @@ class Projectile extends Entity {
 		}
 		return pack;
 	}
+
+	static count = 0;
 }
 
 module.exports = Projectile;

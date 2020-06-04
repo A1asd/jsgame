@@ -1,8 +1,9 @@
 const Entity = require('./Entity');
 const Projectile = require('./Projectile');
+const Skill = require('../Skills/Skill');
 
 class Player extends Entity {
-	constructor(id, x, y, angle) {
+	constructor(id, stats, x, y, angle) {
 		super(x, y, angle);
 		
 		this.id = id;
@@ -16,12 +17,18 @@ class Player extends Entity {
 		}
 
 		this.mouseAngle = 0;
-		this.maxSpd = 2;
+		this.maxSpd = stats.speed;
 
-		this.hp = 10;
-		this.maxHp = 10;
+		this.hp = stats.maxHp;
+		this.maxHp = stats.maxHp;
+
+		this.team = 1;
 
 		this.score = 0;
+
+		this.skills = {
+			skill1: new Skill().homingMissiles(),
+		}
 
 		Entity.playerList[id] = this;
 	}
@@ -74,7 +81,7 @@ class Player extends Entity {
 	}
 
 	static onConnect(socket) {
-		var player = new Player(socket.id, 250, 150, 0);
+		var player = new Player(socket.id, {hp: 10, maxHp: 10, speed: 2}, 250, 150, 0);
 		Entity.initPack.player.push(player.getInitPack());
 
 		socket.on('keystateUpdate', function(data) {
