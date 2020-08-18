@@ -7,9 +7,9 @@
 <div id="serverList"></div>
 
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script src="Entities.js"></script>
+<!--<script src="Entities.js"></script>
 <script src="Renderer.js"></script>
-<script src="InputHandler.js"></script>
+<script src="InputHandler.js"></script>-->
 <script>
 
 	const socket = io();
@@ -21,7 +21,48 @@
 		outlineThickness: 2,
 	}
 
-	const renderer = new Renderer(config);
+	//const renderer = new Renderer(config);
+	//init
+class Player {
+	constructor(initPackage) {
+		this.id = initPackage.id;
+		this.x = initPackage.x;
+		this.y = initPackage.y;
+		this.hp = initPackage.hp;
+		this.maxHp = initPackage.maxHp;
+		this.score = initPackage.score;
+
+		switch (this.id) {
+			case 0: this.color = "red"; break;
+			case 1: this.color = "green"; break;
+			case 2: this.color = "blue"; break;
+			case 3: this.color = "yellow"; break;
+			default: this.color = "white";
+		}
+
+		Player.list[this.id] = this;
+	}
+	static list = {};
+}
+
+class Projectile {
+	constructor(initPackage) {
+		this.id = initPackage.id;
+		this.x = initPackage.x;
+		this.y = initPackage.y;
+
+		Projectile.list[this.id] = this;
+	}
+	static list = {};
+}
+
+class Boss {
+	constructor(initPackage) {
+	}
+
+	static list = {};
+}
+
 
 	ctx.font = "30px Arial";
 
@@ -101,7 +142,7 @@
 		var tmpHtml = "";
 		for(var i in serverList) {
 			console.log(serverList[i].connectedSockets);
-			tmpHtml += "<div>Server " + serverList[i].id + "</div><div>" + serverList[i].connectedSockets.length + "/" + serverList[i].maxSockets + "</div>";
+			tmpHtml += "<div>Server " + serverList[i].id + " [" + serverList[i].map + "]" + "</div><div>" + serverList[i].connectedSockets.length + "/" + serverList[i].maxSockets + "</div>";
 		}
 		document.getElementById('serverList').innerHTML = tmpHtml;
 	}
@@ -240,7 +281,7 @@
 		let mousePosition = { x: event.clientX, y: event.clientY };
 
 		keystates.mouseAngle = mousePosition;
-		socket.emit('keystateUpdate', keystates)
+		socket.emit('keystateUpdate', keystates);
 	});
 	
 </script>

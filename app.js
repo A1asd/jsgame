@@ -123,5 +123,5 @@ class Server {
 }
 
 new Server();
-new Server();
+new Server("test", ["hi", "pups", "waiting"]);
 new Server();
